@@ -41,13 +41,13 @@ library(scran)
 Read experiment data:
 
 ```{r}
-sce <- readRDS("data/01-quality-control.rds")
+sce <- readRDS("output/01-quality-control.rds")
 ```
 
-Filter lowly expressed and lowly detected genes:
+Filter lowly detected and expressed genes:
 
 ```{r}
-row <- !(rowData(sce)$low_mean | rowData(sce)$low_detected)
+nan <- rowData(sce)$low_mean | rowData(sce)$low_detected
 ```
 
 ## Methods
@@ -59,7 +59,7 @@ Evaluate different normalization methods
 Compute expression values from raw counts without any normalization:
 
 ```{r}
-set.seed(129810833)
+set.seed(0110100100)
 
 sizeFactors(sce) <- 1
 
@@ -74,8 +74,8 @@ sce <- runUMAP(sce, dimred = "PCA")
 
 Inspect relative log expression plots coloured by column data:
 
-```{r fig.height = 5, fig.width = 10}
-plotRLE(sce[row, ])
+```{r, fig.height = 5, fig.width = 10}
+plotRLE(sce[!nan, ])
 ```
 
 Inspect dimensionality reduction plots coloured by QC metrics:
@@ -110,15 +110,14 @@ plt <- lapply(var, function(x) plotUMAP(sce, colour_by = x))
 wrap_plots(plt, ncol = 2)
 ```
 
-
 ### Library {.tabset}
 
 Compute expression values from raw counts by scaling with library size factors:
 
 ```{r}
-set.seed(129810833)
+set.seed(0110100100)
 
-sce <- computeLibraryFactors(sce)
+sizeFactors(sce) <- librarySizeFactors(sce)
 
 sce <- logNormCounts(sce)
 
@@ -132,7 +131,7 @@ sce <- runUMAP(sce, dimred = "PCA")
 Inspect relative log expression plots coloured by column data:
 
 ```{r fig.height = 5, fig.width = 10}
-plotRLE(sce[row, ])
+plotRLE(sce[!nan, ])
 ```
 
 Inspect dimensionality reduction plots coloured by QC metrics:
@@ -172,13 +171,13 @@ wrap_plots(plt, ncol = 2)
 Compute expression values from raw counts by scaling with "deconvolved" size factors:
 
 ```{r}
-set.seed(129810833)
+set.seed(0110100100)
 
-min <- round((ncol(sce) - 1) / 3)
+num <- ifelse(ncol(sce) < 100, ncol(sce), 100)
 
-fct <- quickCluster(sce, min.size = min, BSPARAM = ExactParam())
+mem <- quickCluster(sce, min.size = num, BSPARAM = ExactParam())
 
-sce <- computeSumFactors(sce, clusters = fct)
+sizeFactors(sce) <- calculateSumFactors(sce, cluster = mem)
 
 sce <- logNormCounts(sce)
 
@@ -192,7 +191,7 @@ sce <- runUMAP(sce, dimred = "PCA")
 Inspect relative log expression plots coloured by column data:
 
 ```{r fig.height = 5, fig.width = 10}
-plotRLE(sce[row, ])
+plotRLE(sce[!nan, ])
 ```
 
 Inspect dimensionality reduction plots coloured by QC metrics:
@@ -232,13 +231,11 @@ wrap_plots(plt, ncol = 2)
 Compute expression values from raw counts by downsampling:
 
 ```{r}
-set.seed(129810833)
+set.seed(0110100100)
 
-sce <- computeLibraryFactors(sce)
+sizeFactors(sce) <- librarySizeFactors(sce)
 
 sce <- logNormCounts(sce, downsample = TRUE)
-
-sce <- logNormCounts(sce)
 
 sce <- runPCA(sce, BSPARAM = ExactParam())
 
@@ -250,7 +247,7 @@ sce <- runUMAP(sce, dimred = "PCA")
 Inspect relative log expression plots coloured by column data:
 
 ```{r fig.height = 5, fig.width = 10}
-plotRLE(sce[row, ])
+plotRLE(sce[!nan, ])
 ```
 
 Inspect dimensionality reduction plots coloured by QC metrics:
@@ -290,21 +287,37 @@ wrap_plots(plt, ncol = 2)
 Apply the chosen normalization to the experiment data:
 
 ```{r}
-set.seed(129810833)
+set.seed(0110100100)
 
-min <- round((ncol(sce) - 1) / 3)
+num <- ifelse(ncol(sce) < 100, ncol(sce), 100)
 
-fct <- quickCluster(sce, min.size = min, BSPARAM = ExactParam())
+mem <- quickCluster(sce, min.size = num, BSPARAM = ExactParam())
 
-sce <- computeSumFactors(sce, clusters = fct)
+sizeFactors(sce) <- calculateSumFactors(sce, cluster = mem)
 
 sce <- logNormCounts(sce)
+
+sce <- runPCA(sce, BSPARAM = ExactParam())
+
+sce <- runTSNE(sce, dimred = "PCA")
+
+sce <- runUMAP(sce, dimred = "PCA")
 ```
 
 ## Summary
 
 ### Output
 
+Save experiment object to disk:
+
 ```{r}
-saveRDS(sce, "data/02-normalization.rds")
+saveRDS(sce, "output/02-normalization.rds")
+```
+
+### Session
+
+Print session information:
+
+```{r}
+sessionInfo()
 ```

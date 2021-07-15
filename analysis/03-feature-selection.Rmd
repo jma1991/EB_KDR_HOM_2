@@ -43,7 +43,7 @@ library(msigdbr)
 Read experiment data:
 
 ```{r}
-sce <- readRDS("data/02-normalization.rds")
+sce <- readRDS("output/02-normalization.rds")
 ```
 
 ## Blacklist
@@ -169,7 +169,7 @@ Identify highly variable genes:
 ```{r}
 dec <- metadata(sce)$modelGeneVar
 
-hvg <- getTopHVGs(dec, var.field = "bio", var.threshold = 0, fdr.threshold = 0.05)
+hvg <- getTopHVGs(dec, var.field = "bio", var.threshold = 0, fdr.field = "FDR", fdr.threshold = 0.05)
 
 del <- rownames(sce)[rowData(sce)$blacklist == TRUE]
 
@@ -193,7 +193,7 @@ Identify highly variable genes:
 ```{r}
 dec <- metadata(sce)$modelGeneCV2
 
-hvg <- getTopHVGs(dec, var.field = "ratio", var.threshold = 1, fdr.threshold = 0.05)
+hvg <- getTopHVGs(dec, var.field = "ratio", var.threshold = 1, fdr.field = "FDR", fdr.threshold = 0.05)
 
 del <- rownames(sce)[rowData(sce)$blacklist == TRUE]
 
@@ -217,7 +217,7 @@ Identify highly variable genes:
 ```{r}
 dec <- metadata(sce)$modelGeneVarByPoisson
 
-hvg <- getTopHVGs(dec, var.field = "bio", var.threshold = 0, fdr.threshold = 0.05)
+hvg <- getTopHVGs(dec, var.field = "bio", var.threshold = 0, fdr.field = "FDR", fdr.threshold = 0.05)
 
 del <- rownames(sce)[rowData(sce)$blacklist == TRUE]
 
@@ -289,10 +289,10 @@ dec <- c("modelGeneVar", "modelGeneCV2", "modelGeneVarByPoisson")
 
 #### PCA
 
-```{r fig.height = 11, fig.width = 10}
+```{r, fig.height = 11, fig.width = 10}
 plt <- lapply(dec, function(x) {
   
-  set.seed(486077125)
+  set.seed(0101100110)
   
   hvg <- metadata(sce)[[x]]$hvg
   
@@ -307,10 +307,10 @@ patchwork::wrap_plots(plt, ncol = 2)
 
 #### TSNE
 
-```{r fig.height = 11, fig.width = 10}
+```{r, fig.height = 11, fig.width = 10}
 plt <- lapply(dec, function(x) {
   
-  set.seed(476876813)
+  set.seed(0001000001)
   
   hvg <- metadata(sce)[[x]]$hvg
   
@@ -327,10 +327,10 @@ patchwork::wrap_plots(plt, ncol = 2)
 
 #### UMAP
 
-```{r fig.height = 11, fig.width = 10}
+```{r, fig.height = 11, fig.width = 10}
 plt <- lapply(dec, function(x) {
   
-  set.seed(78981865)
+  set.seed(1101101100)
   
   hvg <- metadata(sce)[[x]]$hvg
   
@@ -363,6 +363,16 @@ rowData(sce)$selected <- sel
 
 ### Output
 
+Save experiment object to disk:
+
 ```{r}
-saveRDS(sce, "data/03-feature-selection.rds")
+saveRDS(sce, "output/03-feature-selection.rds")
+```
+
+### Session
+
+Print session information:
+
+```{r}
+sessionInfo()
 ```
