@@ -151,7 +151,7 @@ ggplot(dat, aes(n.pcs, n.clusters)) +
 Choose number of PCs to retain from the above analyses:
 
 ```{r}
-num <- 8
+num <- 6
 
 len <- seq_len(num)
 
